@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: student-management
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=UTC
+    username: root
+    password: Luc123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: never
+
+app:
+  jwt:
+    secret: 9a7f2c8e4b3d2a1f9a7f2c8e4b3d2a1f9a7f2c8e4b3d2a1f
+    expiration: 86400000
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    try-it-out-enabled: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
