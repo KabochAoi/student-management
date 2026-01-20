@@ -10,8 +10,4 @@ public interface AuthService {
     ApiResponse<JwtResponse> login(LoginRequest request);
 
     ApiResponse<?> register(RegisterRequest request);
-
-    ApiResponse<AuthDTO.JwtResponse> login(AuthDTO.LoginRequest req);
-
-    ApiResponse<?> register(AuthDTO.RegisterRequest req);
 }

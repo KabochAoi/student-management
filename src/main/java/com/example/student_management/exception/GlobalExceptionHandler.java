@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.*;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<?>> handleRuntime(RuntimeException ex) {
+    public ResponseEntity<ApiResponse<Object>> handleRuntime(RuntimeException ex) {
         return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(400, ex.getMessage(), null));
+                .body(new ApiResponse<Object>(400, ex.getMessage(), null));
     }
+
 }

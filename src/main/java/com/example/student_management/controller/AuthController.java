@@ -3,7 +3,7 @@ package com.example.student_management.controller;
 import com.example.student_management.dto.*;
 import com.example.student_management.dto.AuthDTO.JwtResponse;
 import com.example.student_management.dto.AuthDTO.LoginRequest;
-import com.example.student_management.dto.AuthDTO.*;
+import com.example.student_management.dto.AuthDTO.RegisterRequest;
 import com.example.student_management.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,9 +1,7 @@
 package com.example.student_management.service;
 
-import com.example.student_management.dto.*;
-import com.example.student_management.dto.AuthDTO.JwtResponse;
-import com.example.student_management.dto.AuthDTO.LoginRequest;
-import com.example.student_management.dto.AuthDTO.RegisterRequest;
+import com.example.student_management.dto.ApiResponse;
+import com.example.student_management.dto.AuthDTO.*;
 import com.example.student_management.entity.Role;
 import com.example.student_management.entity.User;
 import com.example.student_management.repository.RoleRepository;
@@ -12,65 +10,56 @@ import com.example.student_management.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepo;
+    private final RoleRepository roleRepo;
+    private final AuthenticationManager authManager;
     private final JwtService jwtService;
 
     @Override
-    public ApiResponse<JwtResponse> login(LoginRequest request) {
-        return null;
-    }
+    public ApiResponse<JwtResponse> login(LoginRequest req) {
 
-    @Override
-    public ApiResponse<?> register(RegisterRequest request) {
-        return null;
-    }
-
-    @Override
-    public ApiResponse<AuthDTO.JwtResponse> login(AuthDTO.LoginRequest req) {
-
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        req.getUsername(),
-                        req.getPassword()
-                )
+        var auth = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword())
         );
 
         User user = (User) auth.getPrincipal();
 
         String token = jwtService.generateToken(user);
 
-        return new ApiResponse<>(200, "OK",
-                new AuthDTO.JwtResponse(token, user.getUsername(), null));
+        List<String> roles = user.getRoles().stream()
+                .map(Role::getName).toList();
+
+        return new ApiResponse<>(200, "Login success",
+                new JwtResponse(token, user.getUsername(), roles));
     }
 
     @Override
-    public ApiResponse<?> register(AuthDTO.RegisterRequest req) {
+    public ApiResponse<?> register(RegisterRequest req) {
 
-        Role role = roleRepository.findByName("ROLE_USER")
+        if (userRepo.existsByUsername(req.getUsername()))
+            return new ApiResponse<>(400, "Username exists", null);
+
+        Role role = roleRepo.findByName("ROLE_USER")
                 .orElseThrow();
 
-        User u = new User();
-        u.setUsername(req.getUsername());
-        u.setEmail(req.getEmail());
-        u.setFullName(req.getFullName());
-        u.setPassword(passwordEncoder.encode(req.getPassword()));
-        u.setRoles(Collections.singleton(role));
+        User user = new User();
+        user.setUsername(req.getUsername());
+        user.setEmail(req.getEmail());
+        user.setFullName(req.getFullName());
+        user.setPassword(req.getPassword());
+        user.setRoles(Set.of(role));
 
-        userRepository.save(u);
+        userRepo.save(user);
 
-        return new ApiResponse<>(201, "REGISTER OK", null);
+        return new ApiResponse<>(201, "Register success", null);
     }
 }
