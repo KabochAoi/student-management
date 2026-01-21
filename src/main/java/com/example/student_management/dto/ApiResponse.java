@@ -1,10 +1,11 @@
 package com.example.student_management.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 public class ApiResponse<T> {
     private int status;

@@ -1,37 +1,15 @@
 package com.example.student_management.security;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import com.example.student_management.entity.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
-import java.security.Key;
-import java.util.Date;
+public interface JwtService {
 
-@Service
-public class JwtService {
+    String generateToken(User user);
 
-    private static final String SECRET = "12345678901234567890123456789012";
+    String extractUsername(String token);
 
-    private Key key() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
-    }
+    boolean isTokenValid(String token, User user);
 
-    public String generateToken(UserDetails user) {
-        return Jwts.builder()
-                .setSubject(user.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
-                .signWith(key(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-
-    public String extractUsername(String token) {
-        return Jwts.parserBuilder().setSigningKey(key()).build()
-                .parseClaimsJws(token).getBody().getSubject();
-    }
-
-    public boolean validate(String token, UserDetails user) {
-        return extractUsername(token).equals(user.getUsername());
-    }
+    boolean validate(String token, UserDetails userDetails);
 }

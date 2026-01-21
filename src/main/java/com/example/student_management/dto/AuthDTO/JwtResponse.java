@@ -2,12 +2,10 @@ package com.example.student_management.dto.AuthDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
 @Getter
-@Setter
 @AllArgsConstructor
 public class JwtResponse {
     private String token;
