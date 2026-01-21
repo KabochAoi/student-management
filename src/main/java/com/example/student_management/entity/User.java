@@ -28,7 +28,6 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    // 🔧 FIX: map đúng tên cột trong DB
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
@@ -54,7 +53,6 @@ public class User implements UserDetails {
                 .toList();
     }
 
-    // 🔧 RÕ RÀNG cho Spring Security
     @Override
     public String getUsername() {
         return username;

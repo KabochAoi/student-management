@@ -1,6 +1,6 @@
 package com.example.student_management.controller;
 
-import com.example.student_management.dto.*;
+import com.example.student_management.dto.ApiResponse;
 import com.example.student_management.dto.AuthDTO.JwtResponse;
 import com.example.student_management.dto.AuthDTO.LoginRequest;
 import com.example.student_management.dto.AuthDTO.RegisterRequest;
@@ -25,5 +25,4 @@ public class AuthController {
     public ApiResponse<?> register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
-
 }

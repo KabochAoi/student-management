@@ -2,7 +2,8 @@ package com.example.student_management.exception;
 
 import com.example.student_management.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -10,7 +11,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Object>> handleRuntime(RuntimeException ex) {
         return ResponseEntity.badRequest()
-                .body(new ApiResponse<Object>(400, ex.getMessage(), null));
+                .body(new ApiResponse<>(400, ex.getMessage(), null));
     }
-
 }

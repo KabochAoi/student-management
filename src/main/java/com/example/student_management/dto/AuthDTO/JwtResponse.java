@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class JwtResponse {
+
     private String token;
     private String username;
     private List<String> roles;

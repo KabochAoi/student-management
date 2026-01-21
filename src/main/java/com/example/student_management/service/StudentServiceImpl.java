@@ -1,12 +1,9 @@
 package com.example.student_management.service;
 
 import com.example.student_management.entity.Student;
-import com.example.student_management.entity.User;
 import com.example.student_management.exception.ResourceNotFoundException;
 import com.example.student_management.repository.StudentRepository;
-import com.example.student_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,22 +13,9 @@ import java.util.List;
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
-    private final UserRepository userRepository;
 
     @Override
     public Student createStudent(Student student) {
-
-        // Lấy username từ JWT
-        String username = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-
-        // Lấy user hiện tại
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        // Set người tạo
-        student.setCreatedBy(user);
-
         return studentRepository.save(student);
     }
 
@@ -70,11 +54,9 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public void deleteStudent(Long id) {
-
         Student student = studentRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Student not found with id: " + id));
-
         studentRepository.delete(student);
     }
 }

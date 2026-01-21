@@ -15,7 +15,6 @@ public class StudentController {
 
     private final StudentService studentService;
 
-    // CREATE
     @PostMapping
     public ApiResponse<Student> createStudent(@RequestBody Student student) {
         return new ApiResponse<>(
@@ -25,12 +24,11 @@ public class StudentController {
         );
     }
 
-    // UPDATE
     @PutMapping("/{id}")
     public ApiResponse<Student> updateStudent(
             @PathVariable Long id,
-            @RequestBody Student student) {
-
+            @RequestBody Student student
+    ) {
         return new ApiResponse<>(
                 200,
                 "Student updated successfully",
@@ -38,7 +36,6 @@ public class StudentController {
         );
     }
 
-    // GET BY ID
     @GetMapping("/{id}")
     public ApiResponse<Student> getStudentById(@PathVariable Long id) {
         return new ApiResponse<>(
@@ -48,7 +45,6 @@ public class StudentController {
         );
     }
 
-    // GET ALL
     @GetMapping
     public ApiResponse<List<Student>> getAllStudents() {
         return new ApiResponse<>(
@@ -58,7 +54,6 @@ public class StudentController {
         );
     }
 
-    // DELETE
     @DeleteMapping("/{id}")
     public ApiResponse<?> deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
