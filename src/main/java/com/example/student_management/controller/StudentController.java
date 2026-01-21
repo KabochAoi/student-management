@@ -1,12 +1,15 @@
 package com.example.student_management.controller;
 
 import com.example.student_management.dto.ApiResponse;
+import com.example.student_management.dto.StudentDTO.StudentRequest;
+import com.example.student_management.dto.StudentDTO.StudentResponse;
 import com.example.student_management.entity.Student;
 import com.example.student_management.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/students")
@@ -17,44 +20,59 @@ public class StudentController {
 
     // CREATE
     @PostMapping
-    public ApiResponse<Student> createStudent(@RequestBody Student student) {
+    public ApiResponse<StudentResponse> createStudent(
+            @RequestBody StudentRequest request) {
+
+        Student student = studentService.createStudent(request);
+
         return new ApiResponse<>(
                 201,
                 "Student created successfully",
-                studentService.createStudent(student)
+                mapToResponse(student)
         );
     }
 
     // UPDATE
     @PutMapping("/{id}")
-    public ApiResponse<Student> updateStudent(
+    public ApiResponse<StudentResponse> updateStudent(
             @PathVariable Long id,
-            @RequestBody Student student) {
+            @RequestBody StudentRequest request) {
+
+        Student student = studentService.updateStudent(id, request);
 
         return new ApiResponse<>(
                 200,
                 "Student updated successfully",
-                studentService.updateStudent(id, student)
+                mapToResponse(student)
         );
     }
 
     // GET BY ID
     @GetMapping("/{id}")
-    public ApiResponse<Student> getStudentById(@PathVariable Long id) {
+    public ApiResponse<StudentResponse> getStudentById(@PathVariable Long id) {
+
+        Student student = studentService.getStudentById(id);
+
         return new ApiResponse<>(
                 200,
                 "Get student successfully",
-                studentService.getStudentById(id)
+                mapToResponse(student)
         );
     }
 
     // GET ALL
     @GetMapping
-    public ApiResponse<List<Student>> getAllStudents() {
+    public ApiResponse<List<StudentResponse>> getAllStudents() {
+
+        List<StudentResponse> responses = studentService.getAllStudents()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
         return new ApiResponse<>(
                 200,
                 "Get all students successfully",
-                studentService.getAllStudents()
+                responses
         );
     }
 
@@ -67,5 +85,29 @@ public class StudentController {
                 "Student deleted successfully",
                 null
         );
+    }
+
+    // ================== MAPPER ==================
+    private StudentResponse mapToResponse(Student student) {
+        StudentResponse res = new StudentResponse();
+
+        res.setId(student.getId());
+        res.setStudentCode(student.getStudentCode());
+        res.setFullName(student.getFullName());
+        res.setEmail(student.getEmail());
+        res.setPhone(student.getPhone());
+        res.setDateOfBirth(student.getDateOfBirth());
+        res.setGender(student.getGender());
+        res.setAddress(student.getAddress());
+        res.setClassName(student.getClassName());
+        res.setGpa(student.getGpa());
+        res.setStatus(student.getStatus());
+        res.setCreatedAt(student.getCreatedAt());
+
+        if (student.getCreatedBy() != null) {
+            res.setCreatedByUsername(student.getCreatedBy().getUsername());
+        }
+
+        return res;
     }
 }

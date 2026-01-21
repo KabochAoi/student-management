@@ -1,14 +1,14 @@
 package com.example.student_management.service;
 
+import com.example.student_management.dto.StudentDTO.StudentRequest;
 import com.example.student_management.entity.Student;
 import com.example.student_management.entity.User;
-import com.example.student_management.exception.ResourceNotFoundException;
 import com.example.student_management.repository.StudentRepository;
-import com.example.student_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -16,51 +16,60 @@ import java.util.List;
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
-    private final UserRepository userRepository;
 
+    // CREATE
     @Override
-    public Student createStudent(Student student) {
+    public Student createStudent(StudentRequest request) {
 
-        // Lấy username từ JWT
-        String username = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
+        Student student = new Student();
 
-        // Lấy user hiện tại
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        student.setStudentCode(request.getStudentCode());
+        student.setFullName(request.getFullName());
+        student.setEmail(request.getEmail());
+        student.setPhone(request.getPhone());
+        student.setDateOfBirth(request.getDateOfBirth());
+        student.setGender(request.getGender());
+        student.setAddress(request.getAddress());
+        student.setClassName(request.getClassName());
+        student.setGpa(request.getGpa());
+        student.setStatus(request.getStatus());
+        student.setCreatedAt(LocalDateTime.now());
 
-        // Set người tạo
-        student.setCreatedBy(user);
+        // lấy user đang đăng nhập (admin)
+        User currentUser = (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        student.setCreatedBy(currentUser);
+
+        return studentRepository.save(student);
+    }
+
+    // UPDATE
+    @Override
+    public Student updateStudent(Long id, StudentRequest request) {
+
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        student.setFullName(request.getFullName());
+        student.setEmail(request.getEmail());
+        student.setPhone(request.getPhone());
+        student.setDateOfBirth(request.getDateOfBirth());
+        student.setGender(request.getGender());
+        student.setAddress(request.getAddress());
+        student.setClassName(request.getClassName());
+        student.setGpa(request.getGpa());
+        student.setStatus(request.getStatus());
 
         return studentRepository.save(student);
     }
 
     @Override
-    public Student updateStudent(Long id, Student student) {
-
-        Student existingStudent = studentRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Student not found with id: " + id));
-
-        existingStudent.setStudentCode(student.getStudentCode());
-        existingStudent.setFullName(student.getFullName());
-        existingStudent.setEmail(student.getEmail());
-        existingStudent.setPhone(student.getPhone());
-        existingStudent.setDateOfBirth(student.getDateOfBirth());
-        existingStudent.setGender(student.getGender());
-        existingStudent.setAddress(student.getAddress());
-        existingStudent.setClassName(student.getClassName());
-        existingStudent.setGpa(student.getGpa());
-        existingStudent.setStatus(student.getStatus());
-
-        return studentRepository.save(existingStudent);
-    }
-
-    @Override
     public Student getStudentById(Long id) {
         return studentRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Student not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Student not found"));
     }
 
     @Override
@@ -70,11 +79,6 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public void deleteStudent(Long id) {
-
-        Student student = studentRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Student not found with id: " + id));
-
-        studentRepository.delete(student);
+        studentRepository.deleteById(id);
     }
 }
