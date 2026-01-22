@@ -21,13 +21,21 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String generateToken(User user) {
+
+        var roles = user.getAuthorities()
+                .stream()
+                .map(auth -> auth.getAuthority())
+                .toList();
+
         return Jwts.builder()
                 .setSubject(user.getUsername())
+                .claim("roles", roles) // ✅ BẮT BUỘC
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
 
     @Override
     public String extractUsername(String token) {
