@@ -1,6 +1,6 @@
 package com.example.student_management.controller;
 
-import com.example.student_management.dto.*;
+import com.example.student_management.dto.ApiResponse;
 import com.example.student_management.dto.AuthDTO.JwtResponse;
 import com.example.student_management.dto.AuthDTO.LoginRequest;
 import com.example.student_management.dto.AuthDTO.RegisterRequest;
@@ -17,13 +17,16 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ApiResponse<JwtResponse> login(@RequestBody LoginRequest request) {
+    public ApiResponse<JwtResponse> login(
+            @RequestBody LoginRequest request
+    ) {
         return authService.login(request);
     }
 
     @PostMapping("/register")
-    public ApiResponse<?> register(@Valid @RequestBody RegisterRequest request) {
+    public ApiResponse<?> register(
+            @Valid @RequestBody RegisterRequest request
+    ) {
         return authService.register(request);
     }
-
 }

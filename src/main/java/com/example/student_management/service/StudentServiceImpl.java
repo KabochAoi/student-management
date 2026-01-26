@@ -1,6 +1,7 @@
 package com.example.student_management.service;
 
 import com.example.student_management.dto.StudentDTO.StudentRequest;
+import com.example.student_management.dto.StudentDTO.StudentResponse;
 import com.example.student_management.entity.Student;
 import com.example.student_management.entity.User;
 import com.example.student_management.repository.StudentRepository;
@@ -16,69 +17,124 @@ import java.util.List;
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
+    private final RedisStudentCacheService cacheService;
 
-    // CREATE
+    // ===== CREATE =====
     @Override
-    public Student createStudent(StudentRequest request) {
+    public StudentResponse createStudent(StudentRequest request) {
 
         Student student = new Student();
+        mapRequestToEntity(request, student);
 
-        student.setStudentCode(request.getStudentCode());
-        student.setFullName(request.getFullName());
-        student.setEmail(request.getEmail());
-        student.setPhone(request.getPhone());
-        student.setDateOfBirth(request.getDateOfBirth());
-        student.setGender(request.getGender());
-        student.setAddress(request.getAddress());
-        student.setClassName(request.getClassName());
-        student.setGpa(request.getGpa());
-        student.setStatus(request.getStatus());
-        student.setCreatedAt(LocalDateTime.now());
-
-        // lấy user đang đăng nhập (admin)
         User currentUser = (User) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
 
         student.setCreatedBy(currentUser);
+        student.setCreatedAt(LocalDateTime.now());
 
-        return studentRepository.save(student);
+        Student saved = studentRepository.save(student);
+
+        cacheService.evictAllStudents();
+
+        return mapEntityToResponse(saved);
     }
 
-    // UPDATE
+    // ===== UPDATE =====
     @Override
-    public Student updateStudent(Long id, StudentRequest request) {
+    public StudentResponse updateStudent(Long id, StudentRequest request) {
 
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        student.setFullName(request.getFullName());
-        student.setEmail(request.getEmail());
-        student.setPhone(request.getPhone());
-        student.setDateOfBirth(request.getDateOfBirth());
-        student.setGender(request.getGender());
-        student.setAddress(request.getAddress());
-        student.setClassName(request.getClassName());
-        student.setGpa(request.getGpa());
-        student.setStatus(request.getStatus());
+        mapRequestToEntity(request, student);
 
-        return studentRepository.save(student);
+        Student saved = studentRepository.save(student);
+
+        cacheService.evictStudent(id);
+        cacheService.evictAllStudents();
+
+        return mapEntityToResponse(saved);
     }
 
+    // ===== GET BY ID =====
     @Override
-    public Student getStudentById(Long id) {
-        return studentRepository.findById(id)
+    public StudentResponse getStudentById(Long id) {
+
+        StudentResponse cached = cacheService.getStudent(id);
+        if (cached != null) return cached;
+
+        Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        StudentResponse response = mapEntityToResponse(student);
+        cacheService.cacheStudent(response);
+
+        return response;
     }
 
+    // ===== GET ALL =====
     @Override
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+    public List<StudentResponse> getAllStudents() {
+
+        List<StudentResponse> cached = cacheService.getAllStudents();
+        if (cached != null) return cached;
+
+        List<StudentResponse> list = studentRepository.findAll()
+                .stream()
+                .map(this::mapEntityToResponse)
+                .toList();
+
+        cacheService.cacheAllStudents(list);
+        return list;
     }
 
+    // ===== DELETE =====
     @Override
     public void deleteStudent(Long id) {
         studentRepository.deleteById(id);
+        cacheService.evictStudent(id);
+        cacheService.evictAllStudents();
+    }
+
+    // ================== MAPPER ==================
+
+    private void mapRequestToEntity(
+            StudentRequest req,
+            Student student
+    ) {
+        student.setStudentCode(req.getStudentCode());
+        student.setFullName(req.getFullName());
+        student.setEmail(req.getEmail());
+        student.setPhone(req.getPhone());
+        student.setDateOfBirth(req.getDateOfBirth());
+        student.setGender(req.getGender());
+        student.setAddress(req.getAddress());
+        student.setClassName(req.getClassName());
+        student.setGpa(req.getGpa());
+        student.setStatus(req.getStatus());
+    }
+
+    private StudentResponse mapEntityToResponse(Student s) {
+        return StudentResponse.builder()
+                .id(s.getId())
+                .studentCode(s.getStudentCode())
+                .fullName(s.getFullName())
+                .email(s.getEmail())
+                .phone(s.getPhone())
+                .dateOfBirth(s.getDateOfBirth())
+                .gender(s.getGender())
+                .address(s.getAddress())
+                .className(s.getClassName())
+                .gpa(s.getGpa())
+                .status(s.getStatus())
+                .createdAt(s.getCreatedAt())
+                .createdBy(
+                        s.getCreatedBy() != null
+                                ? s.getCreatedBy().getUsername()
+                                : null
+                )
+                .build();
     }
 }

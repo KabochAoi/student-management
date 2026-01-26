@@ -1,19 +1,19 @@
 package com.example.student_management.service;
 
 import com.example.student_management.dto.StudentDTO.StudentRequest;
-import com.example.student_management.entity.Student;
+import com.example.student_management.dto.StudentDTO.StudentResponse;
 
 import java.util.List;
 
 public interface StudentService {
 
-    Student createStudent(StudentRequest request);
+    StudentResponse createStudent(StudentRequest request);
 
-    Student updateStudent(Long id, StudentRequest request);
+    StudentResponse updateStudent(Long id, StudentRequest request);
 
-    Student getStudentById(Long id);
+    StudentResponse getStudentById(Long id);
 
-    List<Student> getAllStudents();
+    List<StudentResponse> getAllStudents();
 
     void deleteStudent(Long id);
 }

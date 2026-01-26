@@ -4,20 +4,21 @@ import com.example.student_management.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
-@Service // 🔥 CÁI NÀY QUAN TRỌNG NHẤT
+@Service
 public class JwtServiceImpl implements JwtService {
 
-    private static final String SECRET_KEY =
-            "01234567890123456789012345678901234567890123456789";
+    @Value("${app.jwt.secret}")
+    private String SECRET_KEY;
 
     @Override
     public String generateToken(User user) {
@@ -29,13 +30,12 @@ public class JwtServiceImpl implements JwtService {
 
         return Jwts.builder()
                 .setSubject(user.getUsername())
-                .claim("roles", roles) // ✅ BẮT BUỘC
+                .claim("roles", roles)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-
 
     @Override
     public String extractUsername(String token) {
@@ -53,7 +53,6 @@ public class JwtServiceImpl implements JwtService {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername())
                 && !isTokenExpired(token);
-
     }
 
     private boolean isTokenExpired(String token) {
@@ -70,7 +69,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private Key getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
