@@ -42,7 +42,8 @@ public class User implements UserDetails, Serializable {
     @Column(nullable = false)
     private boolean enabled = true;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    // 🔥 FIX LỖI LAZY INIT
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
