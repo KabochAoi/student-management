@@ -6,8 +6,10 @@ import com.example.student_management.entity.Student;
 import com.example.student_management.entity.User;
 import com.example.student_management.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -76,19 +78,15 @@ public class StudentServiceImpl implements StudentService {
 
     // ===== GET ALL =====
     @Override
+    @Cacheable(value = "students")
+    @Transactional(readOnly = true)
     public List<StudentResponse> getAllStudents() {
-
-        List<StudentResponse> cached = cacheService.getAllStudents();
-        if (cached != null) return cached;
-
-        List<StudentResponse> list = studentRepository.findAll()
+        return studentRepository.findAll()
                 .stream()
                 .map(this::mapEntityToResponse)
                 .toList();
-
-        cacheService.cacheAllStudents(list);
-        return list;
     }
+
 
     // ===== DELETE =====
     @Override

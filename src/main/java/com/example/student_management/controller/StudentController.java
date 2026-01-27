@@ -5,6 +5,7 @@ import com.example.student_management.dto.StudentDTO.StudentRequest;
 import com.example.student_management.dto.StudentDTO.StudentResponse;
 import com.example.student_management.service.StudentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,12 +52,8 @@ public class StudentController {
     }
 
     @GetMapping
-    public ApiResponse<List<StudentResponse>> getAll() {
-        return new ApiResponse<>(
-                200,
-                "Success",
-                studentService.getAllStudents()
-        );
+    public ResponseEntity<List<StudentResponse>> getAllStudents() {
+        return ResponseEntity.ok(studentService.getAllStudents());
     }
 
     @DeleteMapping("/{id}")
