@@ -1,14 +1,19 @@
 package com.example.student_management.dto.StudentDTO;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class StudentResponse {
+public class StudentResponse implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private Long id;
     private String studentCode;
@@ -21,7 +26,5 @@ public class StudentResponse {
     private String className;
     private Double gpa;
     private String status;
-
     private LocalDateTime createdAt;
-    private String createdBy; // username ONLY
 }

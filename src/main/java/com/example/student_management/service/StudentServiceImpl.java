@@ -6,12 +6,10 @@ import com.example.student_management.entity.Student;
 import com.example.student_management.entity.User;
 import com.example.student_management.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -34,7 +32,6 @@ public class StudentServiceImpl implements StudentService {
                 .getPrincipal();
 
         student.setCreatedBy(currentUser);
-        student.setCreatedAt(LocalDateTime.now());
 
         Student saved = studentRepository.save(student);
 
@@ -62,6 +59,7 @@ public class StudentServiceImpl implements StudentService {
 
     // ===== GET BY ID =====
     @Override
+    @Transactional(readOnly = true)
     public StudentResponse getStudentById(Long id) {
 
         StudentResponse cached = cacheService.getStudent(id);
@@ -78,15 +76,20 @@ public class StudentServiceImpl implements StudentService {
 
     // ===== GET ALL =====
     @Override
-    @Cacheable(value = "students")
     @Transactional(readOnly = true)
     public List<StudentResponse> getAllStudents() {
-        return studentRepository.findAll()
+
+        List<StudentResponse> cached = cacheService.getAllStudents();
+        if (cached != null) return cached;
+
+        List<StudentResponse> result = studentRepository.findAll()
                 .stream()
                 .map(this::mapEntityToResponse)
                 .toList();
-    }
 
+        cacheService.cacheAllStudents(result);
+        return result;
+    }
 
     // ===== DELETE =====
     @Override
@@ -98,10 +101,7 @@ public class StudentServiceImpl implements StudentService {
 
     // ================== MAPPER ==================
 
-    private void mapRequestToEntity(
-            StudentRequest req,
-            Student student
-    ) {
+    private void mapRequestToEntity(StudentRequest req, Student student) {
         student.setStudentCode(req.getStudentCode());
         student.setFullName(req.getFullName());
         student.setEmail(req.getEmail());
@@ -128,11 +128,6 @@ public class StudentServiceImpl implements StudentService {
                 .gpa(s.getGpa())
                 .status(s.getStatus())
                 .createdAt(s.getCreatedAt())
-                .createdBy(
-                        s.getCreatedBy() != null
-                                ? s.getCreatedBy().getUsername()
-                                : null
-                )
                 .build();
     }
 }

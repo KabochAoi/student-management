@@ -5,58 +5,47 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class RedisStudentCacheService {
 
-    private static final String STUDENT_LIST_KEY = "students:all";
-    private static final String STUDENT_KEY_PREFIX = "students:";
-
     private final RedisTemplate<String, Object> redisTemplate;
 
-    // ===== GET =====
+    private static final String STUDENT_KEY = "student::";
+    private static final String STUDENTS_KEY = "students";
+
+    private static final Duration TTL = Duration.ofMinutes(10);
+
+    // ===== SINGLE =====
     public StudentResponse getStudent(Long id) {
-        return (StudentResponse)
-                redisTemplate.opsForValue()
-                        .get(STUDENT_KEY_PREFIX + id);
+        return (StudentResponse) redisTemplate.opsForValue()
+                .get(STUDENT_KEY + id);
     }
 
-    public List<StudentResponse> getAllStudents() {
-        return (List<StudentResponse>)
-                redisTemplate.opsForValue()
-                        .get(STUDENT_LIST_KEY);
-    }
-
-    // ===== PUT =====
-    public void cacheStudent(StudentResponse student) {
+    public void cacheStudent(StudentResponse response) {
         redisTemplate.opsForValue()
-                .set(
-                        STUDENT_KEY_PREFIX + student.getId(),
-                        student,
-                        10,
-                        TimeUnit.MINUTES
-                );
+                .set(STUDENT_KEY + response.getId(), response, TTL);
+    }
+
+    public void evictStudent(Long id) {
+        redisTemplate.delete(STUDENT_KEY + id);
+    }
+
+    // ===== LIST =====
+    public List<StudentResponse> getAllStudents() {
+        return (List<StudentResponse>) redisTemplate.opsForValue()
+                .get(STUDENTS_KEY);
     }
 
     public void cacheAllStudents(List<StudentResponse> students) {
         redisTemplate.opsForValue()
-                .set(
-                        STUDENT_LIST_KEY,
-                        students,
-                        10,
-                        TimeUnit.MINUTES
-                );
-    }
-
-    // ===== EVICT =====
-    public void evictStudent(Long id) {
-        redisTemplate.delete(STUDENT_KEY_PREFIX + id);
+                .set(STUDENTS_KEY, students, TTL);
     }
 
     public void evictAllStudents() {
-        redisTemplate.delete(STUDENT_LIST_KEY);
+        redisTemplate.delete(STUDENTS_KEY);
     }
 }

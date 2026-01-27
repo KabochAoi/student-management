@@ -1,6 +1,5 @@
 package com.example.student_management.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -55,10 +54,7 @@ public class Student implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
-    @JsonIgnore
     private User createdBy;
-
-    /* ================== lifecycle ================== */
 
     @PrePersist
     protected void onCreate() {
